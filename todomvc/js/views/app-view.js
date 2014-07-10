@@ -24,6 +24,12 @@ app.AppView = Backbone.View.extend({
 
     this.listenTo(app.Todos, 'all', this.render);
 
+    //toggle function
+    this.listenTo(app.Todos, 'change:completed', this.filterOne);//listen to attribute completed of todo model
+    this.listenTo(app.Todos,'filter', this.filterAll);
+
+    //render while trigger all event
+    this.listenTo(app.Todos, 'all', this.render);
   },
 
   render: function() {
@@ -56,6 +62,15 @@ app.AppView = Backbone.View.extend({
     app.Todos.each(this.addOne, this);
   },
 
+  filterOne: function(todo) {
+    todo.trigger('visible');
+  },
+
+  filterAll: function(){
+    //see the definition of _.each
+    app.Todos.each(this.filterOne, this);
+  },
+
   createOnEnter: function(event) {
     if(event.which !== ENTER_KEY || !this.$input.val().trim()) {
       return;
@@ -77,15 +92,15 @@ app.AppView = Backbone.View.extend({
 
   clearCompleted: function() {
     _.invoke(app.Todos.completed(), 'destroy');
-		
+
     return false;
   },
 
   toggleAllComplete: function(){
     var completed = this.allCheckbox.checked;
-		
+
     app.Todos.each(function(todo) {
-			
+
       todo.save({'completed': completed});
 
     });
